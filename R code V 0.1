@@ -130,6 +130,8 @@ data$cleanspecies <- gsub("([A-z]+\\s[A-z]+) .*", "\\1", data$cleanspecies) # Th
 data$cleanspecies <- gsub("^[^\\s]*$", "NA", data$cleanspecies, perl = TRUE) #Removes single entries (i.e. Genus only). Match to beginning and end every string that does not include a space; Removes everything in a string without a space in between it (usually Genus-only entries). 
 data$cleanspecies <- as.factor(data$cleanspecies) # Somehow, the above deletions transform the vector from factors, to characters. This turns them back
 data$cleanspecies[data$cleanspecies == "NA"] <- NA # Somehow, creating the new column makes the NA's a character ("NA"), not NA. This turns "NA" into NA.
+exclude <- read.csv("species_to_exclude.csv", header =T, strip.white=TRUE, na.strings=c("")) # for other characters na.strings=c("",".","NA")#Works
+data <- droplevels (subset(data, !(data$cleanspecies %in% exclude$Species ))) # This is a last-minute addition, to remove a short list of 8 Cicadellid species of very questionable validity.
 
 ###### SUBSET THE DATA BY MATCHES TO THE MAW ET AL. 2000 CHECKLIST(regardless of collection locality), AND ALL SPECIMENS FROM CANADA
 matches <- droplevels  (subset (data, data$cleanspecies %in%  checklist$checklist_species))#This is a subset of all rows whose species match the checklist
