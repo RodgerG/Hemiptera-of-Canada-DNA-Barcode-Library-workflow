@@ -1,26 +1,25 @@
 ########################################################################################################
 
-# The R code begins on line 106, and is suggested to be run in RStudio. The workflow is described immediately, below.
+# The R code begins on line 103, and is suggested to be run in RStudio. The workflow is described immediately, below.
 
-# If the working directory (line 106) is set to a folder containing the files described immediately below, this entire R file may be highlighted, and run with a single control + return click.
+# If the working directory (line 106) is set to a folder containing the files described immediately below, this entire R code may be highlighted, and run with a single control + return click.
 # This workflow is based on a BOLD data file, and will generate the below analyses, tables and figures based on the contents of subsequently updated (by BOLD users) data files.
 # This workflow is adaptable to an ordinal-level dataset for any taxon.
 
 # This workflow requires the following files be in the working directory:
 
-# R_code_suporting_file_r_made_divergence_april_30.csv
-# R_code_suporting_file_RodgPrimers_Apr17.csv
-# R_code_suporting_file_primer_code.csv
-# R_code_suporting_file_concordance_status.csv
-# R_code_suporting_file_Main_data_plus_tentative_new_species.csv
-# R_code_suporting_file_other_exclusions.csv
-# R_code_suporting_file_permissions_mar_17.csv
-# R_code_suporting_file_species_checklist.csv
+#### R_code_suporting_file_for_interspecific_divergence.csv - This is a file of pairwise distances, calculated using the distance summary tools on BOLD
+# R_code_suporting_file_Primers.csv - This is a file containing information about primer amplification by specimen
+# R_code_suporting_file_primer_code.csv - This is a file for associating primer names with the specimens.
+#### R_code_suporting_file_concordance_status.csv - This is a file of results from a concordance report for the status of Library specimens on BOLD
+# R_code_suporting_file_Main_data_plus_tentative_new_species.csv - This is a file of all the data used in all analyses.
+# R_code_suporting_file_permissions_mar_17.csv - This is a file of all the Project codes the authors had permission to access. This included private data, before it was made public.
+# R_code_suporting_file_species_checklist.csv - This is a copy of the Maw et al. 2000 checklist
 
 # Subsequently, running the full code produces the following files:
 
 # Main_Data_source_after_pre.filtering.csv
-# BINs_without_names_from_main_data_source.csv
+# BINs_without_names_from_main_data_source.csv - These are BINS
 # COL_Tentative_new_species_records_for_Canada.csv
 # COL_Species_whose_COL_synonyms_are_accepted_names_that_match_the_checklist_update_these_on_BOLD.csv
 # COL_Status_of_Checklist_Names_on_COL.csv
@@ -42,15 +41,13 @@
 # Next, several additional files are read in. These are:
 # R_code_suporting_file_species_checklist.csv = This a csv version of the Maw et al. 2000 checklist
 # R_code_suporting_file_permissions_mar_17.csv = A list of project codes for which we have permission to release data.
-# R_code_suporting_file_other_exclusions.csv = other projects that should not be released
 # R_code_suporting_file_concordance_status.csv = This file only becomes available once a concordance analysis is done on BOLD, and then it NEEDS TO BE MADE, BY HAND, from the concordance report. Once this is done, this file should be re-read in, and all lines re-run until that point.
 
 # DATA CLEANING (the below is the stepwise flow of data cleaning).
 # duplicates, if any are removed via the Process.ID
-# Flagged records, based on the flagged records column are removed
+# Flagged records, based on the flagged records column from the BOLD download are removed.
 # a "Suborder" column is added, with suborder assigned to each specimen based on a family level match with the Maw et al. checklist. If BOLD has not provided a family ID, the NA values of the suborder column are labeled "Not.assigned".
-# The dataset is filtered (using the projects in the permissions list) to only contain release-able records.
-# Ibid for other_exclusions.
+# The dataset is filtered by the project code to only contain release-able records using the projects in the permissions list. 
 # The dataset is filtered for only records identified to order == "Hemiptera".
 # The dataset is filtered to remove records from GenBank.
 # Species names are cleaned by copying the "Species" column, renaming it cleanspecies, and replacing entries that are not clearly in "Genus species" format with "NA". This removes subspecific epithets from trinomials, entries of "Genus sp.", and other non "Genus species" entries.
@@ -72,7 +69,7 @@
 
 # Vector Categories are created for the different kinds of data sources, identification sources, sequence length, and year that will be used for the figures, and could be used for further analyses.
 
-# THE DNA BARCODE REFERENCE LIBRARY - The data is subset to only specimens identified to species, that have >= 500bp of sequence data - this dataset becomes the "DNA Barcode Library" and will be given a DOI
+# THE DNA BARCODE REFERENCE LIBRARY - After several filtering steps in the early part of the workflow, the data is subset to only specimens identified to species that have >= 500bp of sequence data - this dataset becomes the "DNA Barcode Library" and will be given a DOI
 # Process IDs from the library are written to the file: USE_for_a_Discordance_report_***these_are_ProcessIDs_of_IDd_specimens_with_>500bp_*current date*.csv
 # The above process IDs are used to run a discordance report on BOLD. The results must be formatted BY HAND into the input file (above): R_code_suporting_file_concordance_status.csv
 # Once the file R_code_suporting_file_concordance_status.csv (or one like it) is generated, the code should be re-run up until that point. This will create a vector of concordance status on BOLD, for every specimen.
@@ -94,7 +91,7 @@
 # FIGURES
 # Note: when produced in R Studio, the viewing window size governs the saved figure size. A small viewing window will produce collapsed, or difficult to view PDFs.
 # Based on the data-source vector categorization, a proportional histogram of datasources, filled with sequence length is written to the file: FIGURE_histogram_of_seq_length_by_year.pdf
-# The Process IDs from the 'main' dataset are used by the BOLD team to produce the two files: R_code_suporting_file_RodgPrimers_Apr17.csv, and R_code_suporting_file_primer_code.csv 
+# The Process IDs from the 'main' dataset are used by the BOLD team to produce the two files: R_code_suporting_file_Primers.csv, and R_code_suporting_file_primer_code.csv 
 # These two files are used to produce a heat-index bubble diagram of primer usage and proportion of amplification by family, and is written to the file: FIGURE_Primer_plot.pdf
 # Based on the data-source vector categorization, a proportional histogram of sequence length by specimen-collection year is written to the file: FIGURE_sequence_sources.pdf
 
@@ -104,11 +101,10 @@
 
 ###### READ IN THE DATA, CHECKLIST, AND LIST OF PERMISSIONS (To filter for usable data)
 setwd("/Users/Rodger/Desktop/run_R_from_here")
-first <- read.csv("R_code_suporting_file_Main_data_plus_tentative_new_species.csv", header =T, strip.white=TRUE, na.strings=c("")) # for other characters na.strings=c("",".","NA")#Works
+first <- read.csv("R_code_suporting_file_Main_Data_file_comprising_projects_HECAMAIN_HECAMN1_HECATEN.csv", header =T, strip.white=TRUE, na.strings=c("")) # for other characters na.strings=c("",".","NA")#Works
 checklist <- read.csv("R_code_suporting_file_species_checklist.csv", header=T) # This is a CSV version of the Maw et al. 2000 checklist. colname with species is: checklist_species
 permissions <- read.csv("R_code_suporting_file_permissions_mar_17.csv", header=T) # This is a list of projects for which we can freely release data. colname with permissions is: perms
 concordance <- read.csv("R_code_suporting_file_concordance_status.csv", header =T, strip.white=TRUE, na.strings=c("")) # This file is made by hand, and will become available once a concordance analysis is done on BOLD (details below)
-other_exclusions <- read.csv("R_code_suporting_file_other_exclusions.csv", header=T) # colname with exclusions is: exclude
 first[first == "NA"] <- NA # NAs from a previously read in csv seem to be read as "NA" rather than NA, use this to change them back.
 first$concordance.status <- concordance$Rank.of.Conflict[match(first$BIN, concordance$BIN)] # This establishes a vector/column of concordance levels, and only works once a file like the above R_code_suporting_file_concordance_status.csv has been produced (from a discordance report, and read in by hand)
 #remove_dups <- which(duplicated(first$Process.ID)) # for reasons I can't entirely work out, I found a few duplicates in the main data file...
@@ -118,10 +114,9 @@ first$Suborder <- checklist$suborder[match(first$Family, checklist$family)] # ad
 first$Suborder <- as.character(first$Suborder)
 first$Suborder[is.na(first$Suborder)] <- "Not.assigned"
 second <- droplevels (subset(first, (first$Project.Code %in% permissions$perms ))) # This subsets for just release-able records (as of April 2014)
-third <- droplevels (subset(second, !(second$Project.Code %in% other_exclusions$exclude ))) # This subsets for other exclusions
-fourth <- droplevels(subset(third, third$Order == "Hemiptera")) #This excludes everything not ID'd to Order
-fifth <- droplevels(subset(fourth, complete.cases(fourth$Institution))) # This removes all records without "Instution
-data <- droplevels (subset(fifth, fifth$Institution!="Mined from GenBank, NCBI")) # This excludes everything from GenBank
+third <- droplevels(subset(second, second$Order == "Hemiptera")) #This excludes everything not ID'd to Order
+fourth <- droplevels(subset(third, complete.cases(third$Institution))) # This removes all records without "Instution
+data <- droplevels (subset(fourth, fourth$Institution!="Mined from GenBank, NCBI")) # This excludes everything from GenBank
 
 ###### CLEAN SPECIES NAMES (This creates a NEW column of species names (cleanspecies), and cleans it, returning just binomials)
 data$cleanspecies <- data$Species
@@ -130,8 +125,7 @@ data$cleanspecies <- gsub("([A-z]+\\s[A-z]+) .*", "\\1", data$cleanspecies) # Th
 data$cleanspecies <- gsub("^[^\\s]*$", "NA", data$cleanspecies, perl = TRUE) #Removes single entries (i.e. Genus only). Match to beginning and end every string that does not include a space; Removes everything in a string without a space in between it (usually Genus-only entries). 
 data$cleanspecies <- as.factor(data$cleanspecies) # Somehow, the above deletions transform the vector from factors, to characters. This turns them back
 data$cleanspecies[data$cleanspecies == "NA"] <- NA # Somehow, creating the new column makes the NA's a character ("NA"), not NA. This turns "NA" into NA.
-exclude <- read.csv("species_to_exclude.csv", header =T, strip.white=TRUE, na.strings=c("")) # for other characters na.strings=c("",".","NA")#Works
-data <- droplevels (subset(data, !(data$cleanspecies %in% exclude$Species ))) # This is a last-minute addition, to remove a short list of 8 Cicadellid species of very questionable validity.
+
 
 ###### SUBSET THE DATA BY MATCHES TO THE MAW ET AL. 2000 CHECKLIST(regardless of collection locality), AND ALL SPECIMENS FROM CANADA
 matches <- droplevels  (subset (data, data$cleanspecies %in%  checklist$checklist_species))#This is a subset of all rows whose species match the checklist
@@ -184,7 +178,7 @@ newsp <- unique(NewCanadasp_species$cleanspecies) # This is a unique list of all
 write.csv(newsp, file = paste("newsp_that_go_into_COL_search_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE)
 COL <- col_search(name=newsp) # This is the taxize package query for COL
 COL_results <- listToDataframe(myList=COL, myNames=NewCanadasp_species$cleanspecies) # This combines the COL results, and the species initially queried, but dropped in its search.
-#not_in_COL <- droplevels(subset(COL_results, is.na(COL_results$status)))
+not_in_COL <- droplevels(subset(COL_results, is.na(COL_results$status)))
 syn_on_checklist <- droplevels  (subset (COL_results, COL_results$acc_name %in%  checklist$checklist_species))
 write.csv(syn_on_checklist, file = paste("COL_Species_whose_COL_synonyms_are_accepted_names_that_match_the_checklist_update_these_on_BOLD_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) # These are specimens whose COL accepted name is a synonym matching a species on the checklist.
 tentative_new_species <- droplevels  (subset (COL_results, !(COL_results$acc_name %in%  checklist$checklist_species)))
@@ -227,7 +221,7 @@ longseqs
 #main$seq.length <- as.integer(main$seq.length)
 
 # THIS CREATES A VECTOR OF CATEGORIES, BASED ON SEQUENCE LENGTH
-main$seq.cat[main$seq.length > 600] <- "over 600"#works, although note that a vector cannot be factor, and this was changed above
+main$seq.cat[main$seq.length > 658] <- "over 658"#works, although note that a vector cannot be factor, and this was changed above
 main$seq.cat[main$seq.length > 500 & main$seq.length <= 658] <- "500-658"#works
 main$seq.cat[main$seq.length > 300 & main$seq.length <= 500] <- "300-500"#works
 main$seq.cat[main$seq.length > 100 & main$seq.length <= 300] <- "100-300"#works
@@ -235,7 +229,7 @@ main$seq.cat[main$seq.length > 0 & main$seq.length <= 100] <- "0-100"#works
 main$seq.cat[main$seq.length ==0] <- "Zero"#works
 
 # THIS CREATES an alternate VECTOR OF CATEGORIES, BASED ON SEQUENCE LENGTH
-main$seq.cat.2[main$seq.length > 600] <- "over 600"#works, although note that a vector cannot be factor, and this was changed above
+main$seq.cat.2[main$seq.length > 658] <- "over 658"#works, although note that a vector cannot be factor, and this was changed above
 main$seq.cat.2[main$seq.length > 500 & main$seq.length <= 658] <- "500-658"#works
 main$seq.cat.2[main$seq.length > 301 & main$seq.length <= 499] <- "301-499"#works
 main$seq.cat.2[main$seq.length > 1 & main$seq.length <= 300] <- "100-300"#works
@@ -301,8 +295,8 @@ IDd <- droplevels(subset(main, !is.na(main$cleanspecies))) # These are all speci
 ################################################################################################
 IDd500 <- droplevels(subset(IDd, IDd$seq.length >=500)) # These are all specimens ID'd to species, with >=500bp
 write.csv(IDd500$Process.ID, file = paste("USE_this_file_for_a_Discordance_report_***these_are_ProcessIDs_of_IDd_specimens_with_>500bp_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE)# Use the process ID's to run a discordance report
-
-#### Generate a csv of BIN & rank of conflict, as below. THIS WAS DONE BY HAND, IN EXCEL. THIS IS THE FILE "R_code_suporting_file_concordance_status.csv" THAT SHOULD NOW BE RE-READ BACK INTO THE MAIN DATASET ABOVE.
+str(IDd500)
+#### Generate a csv of BIN & rank of conflict, as below. THIS WAS DONE BY HAND, IN EXCEL, BY COPING THE BOLD DISCORDANCE OUTPUT FROM THE ONLINE UI . THIS IS THE FILE "R_code_suporting_file_concordance_status.csv" THAT SHOULD NOW BE RE-READ BACK INTO THE MAIN DATASET ABOVE.
 #Rank.of.Conflict          BIN
 #       Concordant BOLD:AAA1279
 #       Concordant BOLD:AAA2079
@@ -323,7 +317,6 @@ colnames(unique.identifiers)[1] <- "Identifier"
 colnames(unique.identifiers)[2] <- "num.of.specimens"
 write.csv(unique.identifiers, file = paste("IDENTIFIERS_of_IDd_specimens_with_>500bp_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE)
 
-head(species.table)
 ###### SUBSET BY CONCORDANT BINS TO GET PROCESS ID'S FOR A SPECIES-LEVEL DISTANCE ANALYSIS
 concord.BINs <- droplevels(subset(IDd500, IDd500$concordance.status == "Concordant")) # The concordance.status vector should have been made after re-running the code (as above), after the addition of the "R_code_suporting_file_concordance_status.csv" file.
 concord.sp <- concord.BINs[, c("Family", "Genus", "cleanspecies", "Sample.ID", "Suborder", "Process.ID")]
@@ -331,7 +324,7 @@ concord.sp <- concord.BINs[, c("Family", "Genus", "cleanspecies", "Sample.ID", "
 write.csv(concord.sp, file = paste("USE_this_file_for_a_Distance_Summary_***these_are_ProcessIDs_of_species_in_Concordant_BINs_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE)
 #### Use the Process IDs in the above file to generate a csv of the distance summary on BOLD, as below. BOLD distance summaries are returned as excel spreadsheets.
 # Queries with many (hundreds) of specimens per species may exceed the computational ability of BOLD, and queries may need to be done in batches where each batch contains all the members of a given species (so intraspecific distances can be calculated).
-#The spreadsheets from BOLD can be quite large, and when recombining them into one file may exceed the row storage limit of excel. Therefore, I converted each batch-as-spreadsheet into a CSV file, and combined them in R, to produce a file formatted as below.
+#The spreadsheets from BOLD can be quite large, and when recombining them into one file may exceed the row storage limit of excel. Therefore, I converted each batch-as-spreadsheet into a CSV file, and combined them in R, to produce a file formatted as below (RAG).
 #     species_sp_1         process_ID_1        species_sp_2         process_ID_2             species        distance
 #     Catamergus kickapoo   RDBA154-05         Catamergus kickapoo   RFQC116-09       Catamergus kickapoo   0.0000000
 #     Catamergus kickapoo   RDBA373-05         Catamergus kickapoo   RFQC116-09       Catamergus kickapoo   0.4944432
@@ -346,7 +339,7 @@ write.csv(concord.sp, file = paste("USE_this_file_for_a_Distance_Summary_***thes
 
 ###### CREATE A DISTANCE SUMMARY TABLE FROM EXTERNAL DISTANCE REPORT - this is only done for species in concordant BINs, by using named specimens from concordant BINs (as above).
 # The results of the process below, will be added to a species-level summary table based on the Maw et al. 2000 checklist.
-distance <- read.csv(file="R_code_suporting_file_r_made_divergence_april_30.csv", header=T, strip.white=TRUE, na.strings=c(""))
+distance <- read.csv(file="R_code_suporting_file_for_interspecific_divergence.csv", header=T, strip.white=TRUE, na.strings=c(""))
 mean <- tapply(distance$distance, distance$species, mean)
 mean <-round(mean, digits=2)
 stder <- function(x) sd(x)/sqrt(length(x)) # this works
@@ -362,10 +355,11 @@ colnames(sp.dist.sum)[1]="species"
 head(sp.dist.sum)
 
 ###### THIS CREATES TABLES USED TO CREATE THE 3D CONCORDANCE FIGURE(below), and adds a species number column for each BIN to the IDd500 dataframe
-# Note that the 3D Figure can only be automatically viewed if the program XQuartz for MacOSX has been installed: http://xquartz.macosforge.org/landing/ - I apologize for my ignorance of this feature in Windows environments
+# Note that the 3D Figure can only be automatically viewed if the program XQuartz for MacOSX has been #installed: http://xquartz.macosforge.org/landing/ - I apologize for my ignorance of this feature in Windows environments
 # The discordance measured here is based on internal discordance per BIN for THIS dataset 'recognized taxonomists' (as measured by number of species per BIN), and not discordance in BOLD).
 # The discordance on BOLD is brought in at the level of color per bin. This is an important, but subtle nuance that adds an extra dimension of information, highlighting the difference between information for a species/BIN within a designated Library, and the information at the same species/BIN level on BOLD. 
 recognized.taxonomists <- droplevels(subset(identifiers, identifiers$Identifier %in% recognized)) # The list 'recognized' of "recognized" taxonomists was arbitrarliy designated [by Rodger], above.
+write.table(recognized.taxonomists$Process.ID, file="HECATAX_ProcessIDs_of_IDd_specimens_for_discordance_figures.txt", row.names=FALSE, col.names=FALSE, quote=FALSE)
 identifier.list <- data.frame(table(recognized.taxonomists$Identifier))
 identifier.list
 identifier.list.for.supp.table <- identifier.list[with(identifier.list, order(-Freq)) , ]
@@ -375,6 +369,7 @@ write.csv(identifier.list.for.supp.table, file = paste("IDENTIFIERS_of_IDd_speci
 count <- function(x) {sum(length(x))}
 three.D.specimen_number <- tapply(recognized.taxonomists$Process.ID, recognized.taxonomists$BIN, count) # This counts the number of specimens in each BIN
 three.D.species_number <- tapply(recognized.taxonomists$Species, recognized.taxonomists$BIN, function(x) length(na.omit(unique(x)))) # This counts the number of species in each BIN
+three.D.BINs_Per_Family <- tapply(recognized.taxonomists$BIN, recognized.taxonomists$Family, function(x) length(na.omit(unique(x)))) # This counts the number of BINS in each Family (these numbers are used in the concordance figure by family)
 rec.id <- cbind(three.D.specimen_number, three.D.species_number)
 rec.id<-data.frame(as.character(rownames(rec.id)),rec.id)
 names(rec.id)[names(rec.id)=="as.character.rownames.rec.id.."] <- "BIN"
@@ -383,9 +378,13 @@ rec.id$concordance.status <- recognized.taxonomists$concordance.status[match(rec
 rec.id$concordance.color <- rec.id$concordance.status
 rec.id$concordance.color <- gsub("Concordant", "#339999", rec.id$concordance.color)
 rec.id$concordance.color <- gsub("Singleton", "#6699cc", rec.id$concordance.color)
-rec.id$concordance.color <- gsub("Order", "#ff0000", rec.id$concordance.color)
-rec.id$concordance.color <- gsub("Genus", "#cccc33", rec.id$concordance.color)
-rec.id$concordance.color <- gsub("Species", "#cc9900", rec.id$concordance.color)
+rec.id$concordance.color <- gsub("Phylum", "#bd0026", rec.id$concordance.color) # dark red
+rec.id$concordance.color <- gsub("Class", "#cb181d", rec.id$concordance.color) # semi-dark red
+rec.id$concordance.color <- gsub("Order", "#ff0000", rec.id$concordance.color) # bright red
+rec.id$concordance.color <- gsub("Family", "#ec7014", rec.id$concordance.color) # orange
+rec.id$concordance.color <- gsub("Genus", "#cccc33", rec.id$concordance.color) # gold
+rec.id$concordance.color <- gsub("Species", "#cc9900", rec.id$concordance.color) # yellow gold
+
 install.packages("rgl")
 require(rgl)
 rec.id$concordance.color <- as.character(rec.id$concordance.color) # This appears to be key (for reasons I don't yet understand), if not set as character, the colors are kept as default.
@@ -406,23 +405,24 @@ plot3d(big.three.families$three.D.specimen_number, big.three.families$three.D.sp
 aspect3d(1,1,0.5)
 axes3d(zat=seq_along(levels(big.three.families$family)), zlab=levels(big.three.families$family), box=TRUE)
 grid3d(c("x", "y", "z"), col = "gray")
-#ppbig.three.families <- par3d(no.readonly=TRUE) # Set a plot to the orientation you like, then make this
-#dput(ppbig.three.families, file="ppbig.three.families.R", control = "all") # This saves the orientation to a file, that can be read in, in the future.
+
+ppbig.three.families <- par3d(no.readonly=TRUE) # Set a plot to the orientation you like, then make this
+dput(ppbig.three.families, file="ppbig.three.families.R", control = "all") # This saves the orientation to a file, that can be read in, in the future.
 orientppbig.three.families <- structure(list(FOV = 30, ignoreExtent = FALSE, mouseMode = structure(c("trackball", 
-                                             "zoom", "fov"), .Names = c("left", "right", "middle")), skipRedraw = FALSE, 
+                                                                                                     "zoom", "fov"), .Names = c("left", "right", "middle")), skipRedraw = FALSE, 
                                              userMatrix = structure(c(-0.307885646820068, -0.259420692920685, 
-                                              0.915372431278229, 0, 0.951089262962341, -0.0584180168807507, 
-                                              0.303343087434769, 0, -0.0252191238105297, 0.963996171951294, 
-                                              0.264718323945999, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(0.583112180233002, 
-                                              4.15038681030273, 16.2873554229736), zoom = 0.61594820022583, 
+                                                                      0.915372431278229, 0, 0.951089262962341, -0.0584180168807507, 
+                                                                      0.303343087434769, 0, -0.0252191238105297, 0.963996171951294, 
+                                                                      0.264718323945999, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(0.583112180233002, 
+                                                                                                                                      4.15038681030273, 16.2873554229736), zoom = 0.61594820022583, 
                                              windowRect = c(1448L, 72L, 2809L, 832L), family = "sans", 
                                              font = 1L, cex = 1, useFreeType = TRUE), .Names = c("FOV", 
-                                             "ignoreExtent", "mouseMode", "skipRedraw", "userMatrix", "scale", 
-                                              "zoom", "windowRect", "family", "font", "cex", "useFreeType"))
-  
+                                                                                                 "ignoreExtent", "mouseMode", "skipRedraw", "userMatrix", "scale", 
+                                                                                                 "zoom", "windowRect", "family", "font", "cex", "useFreeType"))
+
 # This reads in a prior plot orientation
 par3d(orientppbig.three.families) # This orients the plot, based on the saved orientation. #http://stackoverflow.com/questions/16362381/save-the-orientation-of-a-rgl-plot3d-plot
-#rgl.postscript("June_03th.pdf","pdf") # This saves an image of the plot, as a PDF
+#rgl.postscript("FIGURE_3.pdf","pdf") # This saves an image of the plot, as a PDF
 ######
 
 #The Below plots the Supplementary 3D plot, using all Families
@@ -431,24 +431,29 @@ aspect3d(1,1,3.5)
 axes3d(zat=seq_along(levels(rec.id$family)), zlab=levels(rec.id$family), box=TRUE)
 grid3d(c("x", "y", "z"), col = "gray")
 orientation <- structure(list(FOV = 30, ignoreExtent = FALSE, mouseMode = structure(c("trackball", 
-                        "zoom", "fov"), .Names = c("left", "right", "middle")), skipRedraw = FALSE, 
-                         userMatrix = structure(c(-0.604950487613678, -0.0764312818646431, 
-                         0.792585730552673, 0, 0.796176552772522, -0.0433991141617298, 
-                         0.603506147861481, 0, -0.0117291444912553, 0.996130168437958, 
-                         0.0871071517467499, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(0.632087826728821, 
-                          4.49897813796997, 5.23096227645874), zoom = 0.866700649261475, 
-                          windowRect = c(1495L, 79L, 2429L, 1136L), family = "sans", 
-                          font = 1L, cex = 1, useFreeType = TRUE), .Names = c("FOV", 
-                          "ignoreExtent", "mouseMode", "skipRedraw", "userMatrix", "scale", 
-                           "zoom", "windowRect", "family", "font", "cex", "useFreeType"))
+                                                                                      "zoom", "fov"), .Names = c("left", "right", "middle")), skipRedraw = FALSE, 
+                              userMatrix = structure(c(-0.604950487613678, -0.0764312818646431, 
+                                                       0.792585730552673, 0, 0.796176552772522, -0.0433991141617298, 
+                                                       0.603506147861481, 0, -0.0117291444912553, 0.996130168437958, 
+                                                       0.0871071517467499, 0, 0, 0, 0, 1), .Dim = c(4L, 4L)), scale = c(0.632087826728821, 
+                                                                                                                        4.49897813796997, 5.23096227645874), zoom = 0.866700649261475, 
+                              windowRect = c(1495L, 79L, 2429L, 1136L), family = "sans", 
+                              font = 1L, cex = 1, useFreeType = TRUE), .Names = c("FOV", 
+                                                                                  "ignoreExtent", "mouseMode", "skipRedraw", "userMatrix", "scale", 
+                                                                                  "zoom", "windowRect", "family", "font", "cex", "useFreeType"))
 par3d(orientation)
+
+rgl.postscript("FIGURE_S3_Nov_04.pdf","pdf",drawText=TRUE)
+rgl.postscript("FIGURE_S3_Nov_04.pdf","pdf",drawText=TRUE)
+#rgl.postscript("FIGURE_S3.eps","eps",drawText=TRUE)
+
 #pp <- par3d(no.readonly=TRUE) # Set a plot to the orientation you like, then make this
 
 #### The below writes the files for projects and subsequent DOIs, on BOLD.
-write.csv(main$Process.ID, file = paste("Main_process_IDs_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) 
-write.csv(new.releases$Process.ID, file = paste("new_releases_process_IDs_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) 
-write.csv(IDd500$Process.ID, file = paste("IDd500_process_IDs_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) 
-write.csv(recognized.taxonomists$Process.ID, file = paste("Taxonomist_3D_process_IDs_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) 
+write.csv(main$Process.ID, file = paste("HECAMAIN_and_HECAMN1_process_IDs_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) 
+write.csv(new.releases$Process.ID, file = paste("HECANEW_and_HECANEW1_process_IDs_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) 
+write.csv(IDd500$Process.ID, file = paste("HECALIB_process_IDs_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) 
+write.csv(recognized.taxonomists$Process.ID, file = paste("Recognized_Taxonomist_3D_process_IDs_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) 
 #already.published <- c("HCNC", "RFADL", "RDBA", "DBSI", "DIMC") # These are the projects in the main df that have already been released
 #new.releases <- droplevels (subset(main, !(main$Project.Code %in% already.published ))) # 
 
@@ -480,7 +485,8 @@ colnames(count_of_IDd500)[colnames(count_of_IDd500) == "Var1"] <- "totalspecies"
 species.table$total.library.specimens.on.BOLD <- NULL
 species.table$total.in.library <- count_of_IDd500$Freq[match(species.table$checklist_species, count_of_IDd500$totalspecies)]
 # This lists the intraspecific divergence (sp.dist.sum df), calculated above
-dist.specimens.per.species <- data.frame(table(specimens.for.distance$cleanspecies)) # These are the # of specimens/species used to create the distance report, and their totals are calculated here. Drawing a specimen.per.species count directly from the distance report is confounded by the multiple pairwise comparisons which artifically elevate the specimen occurances per species in the results file. Also, singletons are not analyzed during a distance analysis, and are not returned with the results.
+dist.specimens.per.species <- data.frame(table(concord.sp$cleanspecies)) # These are the # of specimens/species used to create the distance report, and their totals are calculated here. Drawing a specimen.per.species count directly from the distance report is confounded by the multiple pairwise comparisons which artifically elevate the specimen occurances per species in the results file. Also, singletons are not analyzed during a distance analysis, and are not returned with the results.
+#dist.specimens.per.species <- data.frame(table(specimens.for.distance$cleanspecies)) # These are the # of specimens/species used to create the distance report, and their totals are calculated here. Drawing a specimen.per.species count directly from the distance report is confounded by the multiple pairwise comparisons which artifically elevate the specimen occurances per species in the results file. Also, singletons are not analyzed during a distance analysis, and are not returned with the results.
 colnames(dist.specimens.per.species)[1] <- "species"
 colnames(dist.specimens.per.species)[2] <- "number.of.specimens"
 head(dist.specimens.per.species)
@@ -491,7 +497,7 @@ species.table$max <- sp.dist.sum$max[match(species.table$checklist_species, sp.d
 species.table$min <- sp.dist.sum$min[match(species.table$checklist_species, sp.dist.sum$species)]
 head(species.table)
 
-###### This calculates, and plots potential cryptic species
+###### This calculates potential cryptic species.
 divergent.species <- droplevels(subset(species.table, species.table$mean >= 2))
 write.csv(divergent.species, file = paste("Library_species_with_>_2_Pcent_mean_divergence_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE)
 
@@ -544,18 +550,18 @@ write.csv(species.table, file = paste("TABLE_Checklist_based_Species_Table_w_spe
 only.lib <- droplevels(subset(species.table, species.table$Lib.species.share.barcode %in% "No"))
 nrow(only.lib)
 uniq.only.lib <-only.lib[!duplicated(only.lib$checklist_species),]
-nrow(uniq.only.lib) # 1250 species
+nrow(uniq.only.lib) # 1251 species
 #write.csv(uniq.only.lib, file="uniq.only.lib.csv")
 singletons <- droplevels(subset(uniq.only.lib, uniq.only.lib$total.in.library == 1))
 nrow(singletons) #373 This is the total of species represented by singletons in the Library, in single BINs
 lib.concord <- droplevels(subset(uniq.only.lib, uniq.only.lib$total.in.library > 1))                         
-nrow(lib.concord) #877 This is the total of concordant species, represented by two or more specimens in concordant BINs in the library
+nrow(lib.concord) #878 This is the total of concordant species, represented by two or more specimens in concordant BINs in the library
 bold.concord <-droplevels(subset(uniq.only.lib, uniq.only.lib$specimens.in.a.BOLD.Concordant.BIN >=1))
 nrow(bold.concord) # 882
 bold.single <- droplevels(subset(uniq.only.lib, uniq.only.lib$specimens.in.a.BOLD.Singleton.BIN >=1))
 nrow(bold.single)
 bold.singletons <- droplevels(subset(bold.single, !(bold.single$checklist_species %in% bold.concord$checklist_species)))
-str(bold.singletons) #
+nrow(bold.singletons) #196 This is the total of 
 unique(bold.singletons$checklist_species)
 
 
@@ -677,6 +683,7 @@ summary.table <- rbind(z, summary.table)
 summary.table <- summary.table[with(summary.table, order(-Lib.Families)) , ] # for reasons I don't understand the table will not sort by Family in ascending, or descending order.
 # The below calculates the number of library species sharing barcodes, by suborder.
 IDd500$who.shares <- species.table$Lib.species.share.barcode[match(IDd500$cleanspecies, species.table$checklist_species)]
+
 Lib.who.shares <- droplevels(subset(IDd500, IDd500$who.shares =="Yes"))
 Lib.spp.sharing.barcodes <- tapply(Lib.who.shares$cleanspecies, Lib.who.shares$Suborder, function(x) length(na.omit(unique(x))))
 Lib.spp.sharing.barcodes <-data.frame((rownames(Lib.spp.sharing.barcodes)),Lib.spp.sharing.barcodes)
@@ -697,7 +704,7 @@ write.csv(summary.table, file = paste("TABLE_Summary_of_Library_and_Main_dataset
 ###### CREATE A PROPORTIONAL HISTOGRAM OF GENERAL DATA-SOURCES, FILLED WITH SEQUENCE LENGTH
 main$seq.cat <- as.factor(main$seq.cat)
 main$source.group <- ordered(main$source.group, levels = c("BioBus", "Malaise", "BIO related", "Museum"))
-main$seq.cat <- ordered(main$seq.cat, levels = c("Zero", "0-100", "100-300", "300-500", "500-658", "over 600"))
+main$seq.cat <- ordered(main$seq.cat, levels = c("Zero", "0-100", "100-300", "300-500", "500-658", "over 658"))
 install.packages("ggplot2")
 require(ggplot2)
 install.packages("scales")
@@ -713,23 +720,23 @@ p1 <- p1 + theme(axis.text.x=element_text(size=rel(3)), # This is the base text
                  axis.text.y=element_text(size=rel(2),color="black"))
 p1 <- p1 + theme(legend.text=element_text(size=20))
 p1 <- p1 + guides(fill = guide_legend(reverse = TRUE, title.theme = element_text(size=20, colour = "black", angle = 0)))
-#p1 <- p1 + scale_fill_manual(values = c("Zero" = "black", "0-100" ="#C6DBEF", "100-300"="#9ECAE1", "300-500"="#6BAED6", "500-658"="#3182BD", "over 600"="#08519C"))
-p1 <- p1 + scale_fill_manual(name="Sequence Lengths", values = c("Zero" = "black", "0-100" ="#C6DBEF", "100-300"="#9ECAE1", "300-500"="#6BAED6", "500-658"="#3182BD", "over 600"="#08519C"))
+#p1 <- p1 + scale_fill_manual(values = c("Zero" = "black", "0-100" ="#C6DBEF", "100-300"="#9ECAE1", "300-500"="#6BAED6", "500-658"="#3182BD", "over 658"="#08519C"))
+p1 <- p1 + scale_fill_manual(name="Sequence Lengths", values = c("Zero" = "black", "0-100" ="#C6DBEF", "100-300"="#9ECAE1", "300-500"="#6BAED6", "500-658"="#3182BD", "over 658"="#08519C"))
 
 #p1 <- p1 + guides(fill = guide_legend(title.theme = element_text(size=20, colour = "black", angle = 0)))
 #p1 <- p1 + theme(legend.justification=c(1,0), legend.position=c(1,0))
 figure_1 <- p1 + theme(legend.position=c(0,1),legend.justification=c(0,1),
-      legend.direction="vertical",
-      legend.box="horizontal",
-      legend.box.just = c("top"), 
-      legend.background = element_rect(fill=alpha('white', 0.1)))
+                       legend.direction="vertical",
+                       legend.box="horizontal",
+                       legend.box.just = c("top"), 
+                       legend.background = element_rect(fill=alpha('white', 0.1)))
 print(figure_1)
-dev.copy2pdf(file="FIGURE_sequence_sources.pdf")
+dev.copy2pdf(file="FIGURE_1_sequence_sources.pdf")
 ########################################################################################################
 ###### CREATE A PROPORTIONAL HISTOGRAM OF LIBRARY DATA-SOURCES, FILLED WITH SEQUENCE LENGTH
 IDd500$seq.cat <- as.factor(IDd500$seq.cat)
 IDd500$source.group <- ordered(IDd500$source.group, levels = c("BioBus", "Malaise", "BIO related", "Museum"))
-IDd500$seq.cat <- ordered(IDd500$seq.cat, levels = c("Zero", "0-100", "100-300", "300-500", "500-658", "over 600"))
+IDd500$seq.cat <- ordered(IDd500$seq.cat, levels = c("Zero", "0-100", "100-300", "300-500", "500-658", "over 658"))
 install.packages("ggplot2")
 require(ggplot2)
 install.packages("scales")
@@ -744,16 +751,16 @@ p1 <- p1 + theme(axis.text.x=element_text(size=rel(3)), # This is the base text
                  axis.text.y=element_text(size=rel(2),color="black"))
 p1 <- p1 + theme(legend.text=element_text(size=20))
 p1 <- p1 + guides(fill = guide_legend(reverse = TRUE, title.theme = element_text(size=20, colour = "black", angle = 0)))
-#p1 <- p1 + scale_fill_manual(values = c("Zero" = "black", "0-100" ="#C6DBEF", "100-300"="#9ECAE1", "300-500"="#6BAED6", "500-658"="#3182BD", "over 600"="#08519C"))
-p1 <- p1 + scale_fill_manual(name="Sequence Lengths", values = c("Zero" = "black", "0-100" ="#C6DBEF", "100-300"="#9ECAE1", "300-500"="#6BAED6", "500-658"="#3182BD", "over 600"="#08519C"))
+#p1 <- p1 + scale_fill_manual(values = c("Zero" = "black", "0-100" ="#C6DBEF", "100-300"="#9ECAE1", "300-500"="#6BAED6", "500-658"="#3182BD", "over 658"="#08519C"))
+p1 <- p1 + scale_fill_manual(name="Sequence Lengths", values = c("Zero" = "black", "0-100" ="#C6DBEF", "100-300"="#9ECAE1", "300-500"="#6BAED6", "500-658"="#3182BD", "over 658"="#08519C"))
 
 #p1 <- p1 + guides(fill = guide_legend(title.theme = element_text(size=20, colour = "black", angle = 0)))
 #p1 <- p1 + theme(legend.justification=c(1,0), legend.position=c(1,0))
 Supp_figure_2 <- p1 + theme(legend.position=c(0,1),legend.justification=c(0,1),
-                 legend.direction="vertical",
-                 legend.box="horizontal",
-                 legend.box.just = c("top"), 
-                 legend.background = element_rect(fill=alpha('white', 0.1)))
+                            legend.direction="vertical",
+                            legend.box="horizontal",
+                            legend.box.just = c("top"), 
+                            legend.background = element_rect(fill=alpha('white', 0.1)))
 print(Supp_figure_2)
 dev.copy2pdf(file="FIGURE_Library_sequence_sources.pdf")
 
@@ -762,7 +769,7 @@ dev.copy2pdf(file="FIGURE_Library_sequence_sources.pdf")
 ###### CREATE A HEAT-INDEX BUBBLE DIAGRAM OF PRIMER USAGE AND PROPORTION OF AMPLIFICATION BY FAMILY
 # This helps visualize the primers used, their proportions tried, and successful amplifications across the Main-dataset
 # The data comes from a special request to the BOLD Team for all primers associated with Process IDs from the Main-dataset
-hemip.primers <- read.csv("R_code_suporting_file_RodgPrimers_Apr17.csv", header =T, strip.white=TRUE, na.strings=c("")) # for other characters na.strings=c("",".","NA")#Works
+hemip.primers <- read.csv("R_code_suporting_file_Primers.csv", header =T, strip.white=TRUE, na.strings=c("")) # for other characters na.strings=c("",".","NA")#Works
 str(hemip.primers)
 code <- read.csv("R_code_suporting_file_primer_code.csv", header =T, strip.white=TRUE, na.strings=c("")) # for other characters na.strings=c("",".","NA")#Works
 hemip.primers$forward.primer <- code$primer[match(hemip.primers$fk_primer_f, code$code)]
@@ -1000,10 +1007,10 @@ r <- r + theme(axis.text.x=element_text(size=rel(2)),
                axis.title.x=element_text(size=rel(1.3)),
                axis.text.y=element_text(size=rel(1.6),color="black"))
 Figure_2_primer_plot <- r + theme(legend.position="right",
-               legend.direction="vertical",
-               legend.box="horizontal",
-               legend.box.just = c("top"), 
-               legend.background = element_rect(fill=alpha('white', 0.1)))
+                                  legend.direction="vertical",
+                                  legend.box="horizontal",
+                                  legend.box.just = c("top"), 
+                                  legend.background = element_rect(fill=alpha('white', 0.1)))
 Figure_2_primer_plot # This is the finished figure
 
 dev.copy2pdf(file="FIGURE_Primer_plot.pdf") # The snapshot view appears to be dependent on the screen view at the time the file is saved. 
@@ -1013,8 +1020,8 @@ dev.copy2pdf(file="FIGURE_Primer_plot.pdf") # The snapshot view appears to be de
 # This histogram uses the age categories, calculated above.
 age.other <- droplevels(subset(main,complete.cases(main$years)))
 age2 <- droplevels(subset(age.other,!(age.other$years=="2013")))
-age2$seq.cat.2 <- ordered(age2$seq.cat.2, levels = c("Zero", "100-300", "301-499", "500-658", "over 600"))
-#age2$seq.cat.2 <- ordered(age2$seq.cat.2, levels = c("over 600","500-658","300-500","100-300","0-100","Zero"))
+age2$seq.cat.2 <- ordered(age2$seq.cat.2, levels = c("Zero", "100-300", "301-499", "500-658", "over 658"))
+#age2$seq.cat.2 <- ordered(age2$seq.cat.2, levels = c("over 658","500-658","300-500","100-300","0-100","Zero"))
 age2$concise.year.cat <- ordered(age2$concise.year.cat, levels = c("1900-1950","1950-1960","1960-1970","1970-1980","1980-1990","1990-2000","2000-2005","2005-2010","2011","2012"))
 require(ggplot2)
 p1 <- ggplot(age2, aes(x = age2$concise.year.cat, y = (..count..))) # this put absolute values on the y scale
@@ -1034,6 +1041,6 @@ Supp_Figure_1 <- p1 + guides(fill = guide_legend(reverse = TRUE, title.theme = e
 print(Supp_Figure_1)
 dev.copy2pdf(file="FIGURE_histogram_of_seq_length_by_concise_year.pdf") # The snapshot view appears to be dependent on the screen view at the time the file is saved.
 ########################################################################################################
- #;
+#;
 #END;
 
