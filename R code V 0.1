@@ -141,13 +141,6 @@ main <- rbind(matches, Canada) #this brings together checklist matches, and all 
 write.csv(main, file = paste("Main_Data_source_after_pre.filtering_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) 
 ###### Hereafter, this source dataset for subsequent use is called "main" ######
 
-###### ###### ###### ###### ###### ###### ###### 
-to.species <- droplevels(subset(main, !is.na(main$cleanspecies)))
-nrow(to.species) # 1312 species
-length(unique(IDd500$BIN))
-###### ###### ###### ###### ###### ###### ###### ###### 
-
-
 ###### FIND BINS FROM MAIN DATASET NOT MATCHING ANY SPECIES
 df.of.just.species.names <- droplevels (subset(main,complete.cases(main$cleanspecies))) # These are all specimens that have species names
 list.of.bins.with.species <- unique(df.of.just.species.names$BIN) # This is a unique list of BINs associated with species names
