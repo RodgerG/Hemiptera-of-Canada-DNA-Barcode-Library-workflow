@@ -141,6 +141,13 @@ main <- rbind(matches, Canada) #this brings together checklist matches, and all 
 write.csv(main, file = paste("Main_Data_source_after_pre.filtering_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE) 
 ###### Hereafter, this source dataset for subsequent use is called "main" ######
 
+###### ###### ###### ###### ###### ###### ###### 
+to.species <- droplevels(subset(main, !is.na(main$cleanspecies)))
+nrow(to.species) # 1312 species
+length(unique(IDd500$BIN))
+###### ###### ###### ###### ###### ###### ###### ###### 
+
+
 ###### FIND BINS FROM MAIN DATASET NOT MATCHING ANY SPECIES
 df.of.just.species.names <- droplevels (subset(main,complete.cases(main$cleanspecies))) # These are all specimens that have species names
 list.of.bins.with.species <- unique(df.of.just.species.names$BIN) # This is a unique list of BINs associated with species names
@@ -317,6 +324,7 @@ colnames(unique.identifiers)[1] <- "Identifier"
 colnames(unique.identifiers)[2] <- "num.of.specimens"
 write.csv(unique.identifiers, file = paste("IDENTIFIERS_of_IDd_specimens_with_>500bp_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE)
 
+
 ###### SUBSET BY CONCORDANT BINS TO GET PROCESS ID'S FOR A SPECIES-LEVEL DISTANCE ANALYSIS
 concord.BINs <- droplevels(subset(IDd500, IDd500$concordance.status == "Concordant")) # The concordance.status vector should have been made after re-running the code (as above), after the addition of the "R_code_suporting_file_concordance_status.csv" file.
 concord.sp <- concord.BINs[, c("Family", "Genus", "cleanspecies", "Sample.ID", "Suborder", "Process.ID")]
@@ -399,6 +407,14 @@ write.csv(big.three.identifier.list.for.supp.table, file = paste("IDENTIFIERS_of
 Big.three.BIN_number <- tapply(big.three.families$BIN, big.three.families$family, count) # This calculates the number of BINs per family 
 Big.three.BIN_number #
 big.three.families$concordance.color <- as.character(big.three.families$concordance.color) # This appears to be key (for reasons I don't yet understand), if not set as character, the colors are kept as default.
+unique(big.three.families$three.D.species_number)
+big.three.one <- droplevels(subset(big.three.families, big.three.families$three.D.species_number==1))
+nrow(big.three.one) # BINs with one species
+big.three.two <- droplevels(subset(big.three.families, big.three.families$three.D.species_number==2))
+nrow(big.three.two)
+big.three.more <- droplevels(subset(big.three.families, big.three.families$three.D.species_number >2))
+nrow(big.three.more)
+head(big.three.families)
 require(rgl)
 # The four lines below, create the 3D plot, and are continuous - they should be selected and run alltogether.
 plot3d(big.three.families$three.D.specimen_number, big.three.families$three.D.species_number, big.three.families$family, col=big.three.families$concordance.color, size=2.3, type='s', xlab = "Specimens in BIN", ylab = "Species in BIN", zlab =".")
@@ -477,6 +493,7 @@ species.table$accepted <- NULL
 species.table$other <- NULL
 # This counts all the specimens, named to species, for all the data that can be released.
 count_of_all_species <- data.frame(table(main$cleanspecies))
+str(main$Genus)
 colnames(count_of_all_species)[colnames(count_of_all_species) == "Var1"] <- "totalspecies"
 species.table$Public.on.BOLD <- count_of_all_species$Freq[match(species.table$checklist_species, count_of_all_species$totalspecies)]
 #This counts all the specimens in the Library dataset
@@ -499,6 +516,7 @@ head(species.table)
 
 ###### This calculates potential cryptic species.
 divergent.species <- droplevels(subset(species.table, species.table$mean >= 2))
+length(unique(divergent.species$species))
 write.csv(divergent.species, file = paste("Library_species_with_>_2_Pcent_mean_divergence_", as.Date(Sys.time()), ".csv", sep = ""), row.names = FALSE)
 
 ###### CREATE A TABLE OF REFERENCE LIBRARY SPECIES SHARING BARCODES, BASED ON THE NUMBER OF SPECIES IN A BIN, AND ATTACH THIS TO THE "SPECIES.TABLE"
@@ -548,20 +566,20 @@ write.csv(species.table, file = paste("TABLE_Checklist_based_Species_Table_w_spe
 
 # This Calculates the number of Library species that are singleton and concordant within the library, and on BOLD
 only.lib <- droplevels(subset(species.table, species.table$Lib.species.share.barcode %in% "No"))
-nrow(only.lib)
-uniq.only.lib <-only.lib[!duplicated(only.lib$checklist_species),]
-nrow(uniq.only.lib) # 1251 species
+str(only.lib)
+uniq.only.lib <-only.lib[!duplicated(only.lib$checklist_species),] # this removal of duplicates is because some Genus species combinations are listed twice, because one or more entry represents a subspecies.
+nrow(uniq.only.lib) # 1312 species
 #write.csv(uniq.only.lib, file="uniq.only.lib.csv")
 singletons <- droplevels(subset(uniq.only.lib, uniq.only.lib$total.in.library == 1))
-nrow(singletons) #373 This is the total of species represented by singletons in the Library, in single BINs
+nrow(singletons) #368 This is the total of species represented by singletons in the Library, in single BINs
 lib.concord <- droplevels(subset(uniq.only.lib, uniq.only.lib$total.in.library > 1))                         
-nrow(lib.concord) #878 This is the total of concordant species, represented by two or more specimens in concordant BINs in the library
+nrow(lib.concord) #944 This is the total of concordant species, represented by two or more specimens in concordant BINs in the library
 bold.concord <-droplevels(subset(uniq.only.lib, uniq.only.lib$specimens.in.a.BOLD.Concordant.BIN >=1))
-nrow(bold.concord) # 882
+nrow(bold.concord) # 919
 bold.single <- droplevels(subset(uniq.only.lib, uniq.only.lib$specimens.in.a.BOLD.Singleton.BIN >=1))
-nrow(bold.single)
+nrow(bold.single) #234
 bold.singletons <- droplevels(subset(bold.single, !(bold.single$checklist_species %in% bold.concord$checklist_species)))
-nrow(bold.singletons) #196 This is the total of 
+nrow(bold.singletons) #178 This is the total of 
 unique(bold.singletons$checklist_species)
 
 
